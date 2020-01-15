@@ -1,5 +1,5 @@
 # codec
-Package log implements logging of multi level.
+Package log implements multilevel logging.
 
 ## Feature
 * debug
