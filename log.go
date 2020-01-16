@@ -38,9 +38,25 @@ const (
 )
 
 var (
+	logPrefix = "Log"
+	logger    = New()
+	redBg     = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
+	black     = string([]byte{27, 91, 57, 48, 109})
+	red       = string([]byte{27, 91, 51, 49, 109})
+	green     = string([]byte{27, 91, 51, 50, 109})
+	yellow    = string([]byte{27, 91, 51, 51, 109})
+	blue      = string([]byte{27, 91, 51, 52, 109})
+	magenta   = string([]byte{27, 91, 51, 53, 109})
+	cyan      = string([]byte{27, 91, 51, 54, 109})
+	white     = string([]byte{27, 91, 51, 55, 109})
+	reset     = string([]byte{27, 91, 48, 109})
+)
+
+// Logger defines the logger.
+type Logger struct {
+	prefix       string
 	out          io.Writer
-	logPrefix    = "Log"
-	logLevel     Level
+	level        Level
 	debugLogger  *log.Logger
 	traceLogger  *log.Logger
 	allLogger    *log.Logger
@@ -50,243 +66,406 @@ var (
 	errorLogger  *log.Logger
 	panicLogger  *log.Logger
 	fatalLogger  *log.Logger
-	redBg        = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
-	black        = string([]byte{27, 91, 57, 48, 109})
-	red          = string([]byte{27, 91, 51, 49, 109})
-	green        = string([]byte{27, 91, 51, 50, 109})
-	yellow       = string([]byte{27, 91, 51, 51, 109})
-	blue         = string([]byte{27, 91, 51, 52, 109})
-	magenta      = string([]byte{27, 91, 51, 53, 109})
-	cyan         = string([]byte{27, 91, 51, 54, 109})
-	white        = string([]byte{27, 91, 51, 55, 109})
-	reset        = string([]byte{27, 91, 48, 109})
-)
-
-func init() {
-	SetOut(os.Stdout)
-	SetLevel(InfoLevel)
-	initLog()
 }
 
-func initLog() {
-	debugLogger = log.New(out, blue+"["+logPrefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	traceLogger = log.New(out, cyan+"["+logPrefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	allLogger = log.New(out, white+"["+logPrefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	infoLogger = log.New(out, black+"["+logPrefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	noticeLogger = log.New(out, green+"["+logPrefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	warnLogger = log.New(out, yellow+"["+logPrefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	errorLogger = log.New(out, redBg+"["+logPrefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	panicLogger = log.New(out, red+"["+logPrefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+// New creates a new Logger.
+func New() *Logger {
+	l := &Logger{
+		prefix: logPrefix,
+		out:    os.Stdout,
+		level:  InfoLevel,
+	}
+	l.init()
+	return l
 }
 
 //SetPrefix sets log's prefix
 func SetPrefix(prefix string) {
-	logPrefix = prefix
-	initLog()
+	logger.SetPrefix(prefix)
+}
+
+//SetPrefix sets log's prefix
+func (l *Logger) SetPrefix(prefix string) {
+	l.prefix = prefix
+	l.init()
+}
+
+//GetPrefix returns log's prefix
+func GetPrefix() (prefix string) {
+	return logger.GetPrefix()
+}
+
+//GetPrefix returns log's prefix
+func (l *Logger) GetPrefix() (prefix string) {
+	return l.prefix
 }
 
 //SetLevel sets log's level
 func SetLevel(level Level) {
-	logLevel = level
+	logger.SetLevel(level)
+}
+
+//SetLevel sets log's level
+func (l *Logger) SetLevel(level Level) {
+	l.level = level
+	l.init()
 }
 
 //SetOut sets log's writer. The out variable sets the
 // destination to which log data will be written.
 func SetOut(w io.Writer) {
-	out = w
+	logger.SetOut(w)
+}
+
+//SetOut sets log's writer. The out variable sets the
+// destination to which log data will be written.
+func (l *Logger) SetOut(w io.Writer) {
+	l.out = w
+	l.init()
 }
 
 //GetLevel returns log's level
 func GetLevel() Level {
-	return logLevel
+	return logger.GetLevel()
+}
+
+//GetLevel returns log's level
+func (l *Logger) GetLevel() Level {
+	return l.level
+}
+
+func (l *Logger) init() {
+	l.debugLogger = log.New(l.out, blue+"["+logPrefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.traceLogger = log.New(l.out, cyan+"["+logPrefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.allLogger = log.New(l.out, white+"["+logPrefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.infoLogger = log.New(l.out, black+"["+logPrefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.noticeLogger = log.New(l.out, green+"["+logPrefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.warnLogger = log.New(l.out, yellow+"["+logPrefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.errorLogger = log.New(l.out, redBg+"["+logPrefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.panicLogger = log.New(l.out, red+"["+logPrefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.fatalLogger = log.New(l.out, magenta+"["+logPrefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 // Debug is equivalent to log.Print() for debug.
-func Debug(v ...interface{}) {
-	if logLevel <= DebugLevel {
-		debugLogger.Print(v...)
+func (l *Logger) Debug(v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.debugLogger.Print(v...)
 	}
 }
 
 // Debugf is equivalent to log.Printf() for debug.
-func Debugf(format string, v ...interface{}) {
-	if logLevel <= DebugLevel {
-		debugLogger.Printf(format, v...)
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.debugLogger.Printf(format, v...)
 	}
 }
 
 // Debugln is equivalent to log.Println() for debug.
-func Debugln(v ...interface{}) {
-	if logLevel <= DebugLevel {
-		debugLogger.Println(v...)
+func (l *Logger) Debugln(v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.debugLogger.Println(v...)
 	}
 }
 
 // Trace is equivalent to log.Print() for trace.
-func Trace(v ...interface{}) {
-	if logLevel <= TraceLevel {
-		traceLogger.Print(v...)
+func (l *Logger) Trace(v ...interface{}) {
+	if l.level <= TraceLevel {
+		l.traceLogger.Print(v...)
 	}
 }
 
 // Tracef is equivalent to log.Printf() for trace.
-func Tracef(format string, v ...interface{}) {
-	if logLevel <= TraceLevel {
-		traceLogger.Printf(format, v...)
+func (l *Logger) Tracef(format string, v ...interface{}) {
+	if l.level <= TraceLevel {
+		l.traceLogger.Printf(format, v...)
 	}
 }
 
 // Traceln is equivalent to log.Println() for trace.
-func Traceln(v ...interface{}) {
-	if logLevel <= TraceLevel {
-		traceLogger.Println(v...)
+func (l *Logger) Traceln(v ...interface{}) {
+	if l.level <= TraceLevel {
+		l.traceLogger.Println(v...)
 	}
 }
 
 // All is equivalent to log.Print() for all log.
-func All(v ...interface{}) {
-	if logLevel <= AllLevel {
-		allLogger.Print(v...)
+func (l *Logger) All(v ...interface{}) {
+	if l.level <= AllLevel {
+		l.allLogger.Print(v...)
 	}
 }
 
 // Allf is equivalent to log.Printf() for all log.
-func Allf(format string, v ...interface{}) {
-	if logLevel <= AllLevel {
-		allLogger.Printf(format, v...)
+func (l *Logger) Allf(format string, v ...interface{}) {
+	if l.level <= AllLevel {
+		l.allLogger.Printf(format, v...)
 	}
 }
 
 // Allln is equivalent to log.Println() for all log.
-func Allln(v ...interface{}) {
-	if logLevel <= AllLevel {
-		allLogger.Println(v...)
+func (l *Logger) Allln(v ...interface{}) {
+	if l.level <= AllLevel {
+		l.allLogger.Println(v...)
 	}
 }
 
 // Info is equivalent to log.Print() for info.
-func Info(v ...interface{}) {
-	if logLevel <= InfoLevel {
-		infoLogger.Print(v...)
+func (l *Logger) Info(v ...interface{}) {
+	if l.level <= InfoLevel {
+		l.infoLogger.Print(v...)
 	}
 }
 
 // Infof is equivalent to log.Printf() for info.
-func Infof(format string, v ...interface{}) {
-	if logLevel <= InfoLevel {
-		infoLogger.Printf(format, v...)
+func (l *Logger) Infof(format string, v ...interface{}) {
+	if l.level <= InfoLevel {
+		l.infoLogger.Printf(format, v...)
 	}
 }
 
 // Infoln is equivalent to log.Println() for info.
-func Infoln(v ...interface{}) {
-	if logLevel <= InfoLevel {
-		infoLogger.Println(v...)
+func (l *Logger) Infoln(v ...interface{}) {
+	if l.level <= InfoLevel {
+		l.infoLogger.Println(v...)
 	}
 }
 
 // Notice is equivalent to log.Print() for notice.
-func Notice(v ...interface{}) {
-	if logLevel <= NoticeLevel {
-		noticeLogger.Print(v...)
+func (l *Logger) Notice(v ...interface{}) {
+	if l.level <= NoticeLevel {
+		l.noticeLogger.Print(v...)
 	}
 }
 
 // Noticef is equivalent to log.Printf() for notice.
-func Noticef(format string, v ...interface{}) {
-	if logLevel <= NoticeLevel {
-		noticeLogger.Printf(format, v...)
+func (l *Logger) Noticef(format string, v ...interface{}) {
+	if l.level <= NoticeLevel {
+		l.noticeLogger.Printf(format, v...)
 	}
 }
 
 // Noticeln is equivalent to log.Println() for notice.
-func Noticeln(v ...interface{}) {
-	if logLevel <= NoticeLevel {
-		noticeLogger.Println(v...)
+func (l *Logger) Noticeln(v ...interface{}) {
+	if l.level <= NoticeLevel {
+		l.noticeLogger.Println(v...)
 	}
 }
 
 // Warn is equivalent to log.Print() for warn.
-func Warn(v ...interface{}) {
-	if logLevel <= WarnLevel {
-		warnLogger.Print(v...)
+func (l *Logger) Warn(v ...interface{}) {
+	if l.level <= WarnLevel {
+		l.warnLogger.Print(v...)
 	}
 }
 
 // Warnf is equivalent to log.Printf() for warn.
-func Warnf(format string, v ...interface{}) {
-	if logLevel <= InfoLevel {
-		warnLogger.Printf(format, v...)
+func (l *Logger) Warnf(format string, v ...interface{}) {
+	if l.level <= InfoLevel {
+		l.warnLogger.Printf(format, v...)
 	}
 }
 
 // Warnln is equivalent to log.Println() for warn.
-func Warnln(v ...interface{}) {
-	if logLevel <= WarnLevel {
-		warnLogger.Println(v...)
+func (l *Logger) Warnln(v ...interface{}) {
+	if l.level <= WarnLevel {
+		l.warnLogger.Println(v...)
 	}
 }
 
 // Error is equivalent to log.Print() for error.
-func Error(v ...interface{}) {
-	if logLevel <= ErrorLevel {
-		errorLogger.Print(v...)
+func (l *Logger) Error(v ...interface{}) {
+	if l.level <= ErrorLevel {
+		l.errorLogger.Print(v...)
 	}
 }
 
 // Errorf is equivalent to log.Printf() for error.
-func Errorf(format string, v ...interface{}) {
-	if logLevel <= ErrorLevel {
-		errorLogger.Printf(format, v...)
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	if l.level <= ErrorLevel {
+		l.errorLogger.Printf(format, v...)
 	}
 }
 
 // Errorln is equivalent to log.Println() for error.
-func Errorln(v ...interface{}) {
-	if logLevel <= ErrorLevel {
-		errorLogger.Println(v...)
+func (l *Logger) Errorln(v ...interface{}) {
+	if l.level <= ErrorLevel {
+		l.errorLogger.Println(v...)
 	}
 }
 
 // Panic is equivalent to log.Print() for panic.
-func Panic(v ...interface{}) {
-	if logLevel <= PanicLevel {
-		panicLogger.Print(v...)
+func (l *Logger) Panic(v ...interface{}) {
+	if l.level <= PanicLevel {
+		l.panicLogger.Print(v...)
 	}
 }
 
 // Panicf is equivalent to log.Printf() for panic.
-func Panicf(format string, v ...interface{}) {
-	if logLevel <= PanicLevel {
-		panicLogger.Printf(format, v...)
+func (l *Logger) Panicf(format string, v ...interface{}) {
+	if l.level <= PanicLevel {
+		l.panicLogger.Printf(format, v...)
 	}
 }
 
 // Panicln is equivalent to log.Println() for panic.
-func Panicln(v ...interface{}) {
-	if logLevel <= PanicLevel {
-		panicLogger.Println(v...)
+func (l *Logger) Panicln(v ...interface{}) {
+	if l.level <= PanicLevel {
+		l.panicLogger.Println(v...)
 	}
 }
 
 // Fatal is equivalent to log.Print() for fatal.
-func Fatal(v ...interface{}) {
-	if logLevel <= FatalLevel {
-		fatalLogger.Print(v...)
+func (l *Logger) Fatal(v ...interface{}) {
+	if l.level <= FatalLevel {
+		l.fatalLogger.Print(v...)
 	}
 }
 
 // Fatalf is equivalent to log.Printf() for fatal.
-func Fatalf(format string, v ...interface{}) {
-	if logLevel <= FatalLevel {
-		fatalLogger.Printf(format, v...)
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	if l.level <= FatalLevel {
+		l.fatalLogger.Printf(format, v...)
 	}
 }
 
 // Fatalln is equivalent to log.Println() for fatal.
-func Fatalln(v ...interface{}) {
-	if logLevel <= FatalLevel {
-		fatalLogger.Println(v...)
+func (l *Logger) Fatalln(v ...interface{}) {
+	if l.level <= FatalLevel {
+		l.fatalLogger.Println(v...)
 	}
+}
+
+// Debug is equivalent to log.Print() for debug.
+func Debug(v ...interface{}) {
+	logger.Debug(v...)
+}
+
+// Debugf is equivalent to log.Printf() for debug.
+func Debugf(format string, v ...interface{}) {
+	logger.Debugf(format, v...)
+}
+
+// Debugln is equivalent to log.Println() for debug.
+func Debugln(v ...interface{}) {
+	logger.Debugln(v...)
+}
+
+// Trace is equivalent to log.Print() for trace.
+func Trace(v ...interface{}) {
+	logger.Trace(v...)
+}
+
+// Tracef is equivalent to log.Printf() for trace.
+func Tracef(format string, v ...interface{}) {
+	logger.Tracef(format, v...)
+}
+
+// Traceln is equivalent to log.Println() for trace.
+func Traceln(v ...interface{}) {
+	logger.Traceln(v...)
+}
+
+// All is equivalent to log.Print() for all log.
+func All(v ...interface{}) {
+	logger.All(v...)
+}
+
+// Allf is equivalent to log.Printf() for all log.
+func Allf(format string, v ...interface{}) {
+	logger.Allf(format, v...)
+}
+
+// Allln is equivalent to log.Println() for all log.
+func Allln(v ...interface{}) {
+	logger.Allln(v...)
+}
+
+// Info is equivalent to log.Print() for info.
+func Info(v ...interface{}) {
+	logger.Info(v...)
+}
+
+// Infof is equivalent to log.Printf() for info.
+func Infof(format string, v ...interface{}) {
+	logger.Infof(format, v...)
+}
+
+// Infoln is equivalent to log.Println() for info.
+func Infoln(v ...interface{}) {
+	logger.Infoln(v...)
+}
+
+// Notice is equivalent to log.Print() for notice.
+func Notice(v ...interface{}) {
+	logger.Notice(v...)
+}
+
+// Noticef is equivalent to log.Printf() for notice.
+func Noticef(format string, v ...interface{}) {
+	logger.Noticef(format, v...)
+}
+
+// Noticeln is equivalent to log.Println() for notice.
+func Noticeln(v ...interface{}) {
+	logger.Noticeln(v...)
+}
+
+// Warn is equivalent to log.Print() for warn.
+func Warn(v ...interface{}) {
+	logger.Warn(v...)
+}
+
+// Warnf is equivalent to log.Printf() for warn.
+func Warnf(format string, v ...interface{}) {
+	logger.Warnf(format, v...)
+}
+
+// Warnln is equivalent to log.Println() for warn.
+func Warnln(v ...interface{}) {
+	logger.Warnln(v...)
+}
+
+// Error is equivalent to log.Print() for error.
+func Error(v ...interface{}) {
+	logger.Error(v...)
+}
+
+// Errorf is equivalent to log.Printf() for error.
+func Errorf(format string, v ...interface{}) {
+	logger.Errorf(format, v...)
+}
+
+// Errorln is equivalent to log.Println() for error.
+func Errorln(v ...interface{}) {
+	logger.Errorln(v...)
+}
+
+// Panic is equivalent to log.Print() for panic.
+func Panic(v ...interface{}) {
+	logger.Panic(v...)
+}
+
+// Panicf is equivalent to log.Printf() for panic.
+func Panicf(format string, v ...interface{}) {
+	logger.Panicf(format, v...)
+}
+
+// Panicln is equivalent to log.Println() for panic.
+func Panicln(v ...interface{}) {
+	logger.Panicln(v...)
+}
+
+// Fatal is equivalent to log.Print() for fatal.
+func Fatal(v ...interface{}) {
+	logger.Fatal(v...)
+}
+
+// Fatalf is equivalent to log.Printf() for fatal.
+func Fatalf(format string, v ...interface{}) {
+	logger.Fatalf(format, v...)
+}
+
+// Fatalln is equivalent to log.Println() for fatal.
+func Fatalln(v ...interface{}) {
+	logger.Fatalln(v...)
 }
