@@ -55,17 +55,8 @@ func main() {
 ```
 
 ### Output
-```
-[LogPrefix][D] 2020/01/16 09:13:25.718734 1024 HelloWorld true
-[LogPrefix][T] 2020/01/16 09:13:25.718746 1024 HelloWorld true
-[LogPrefix][A] 2020/01/16 09:13:25.718748 1024 HelloWorld true
-[LogPrefix][I] 2020/01/16 09:13:25.718749 1024 HelloWorld true
-[LogPrefix][N] 2020/01/16 09:13:25.718751 1024 HelloWorld true
-[LogPrefix][W] 2020/01/16 09:13:25.718753 1024 HelloWorld true
-[LogPrefix][E] 2020/01/16 09:13:25.718754 1024 HelloWorld true
-[LogPrefix][P] 2020/01/16 09:13:25.718756 1024 HelloWorld true
-[LogPrefix][F] 2020/01/16 09:13:25.718758 1024 HelloWorld true
-```
+<img src="http://raw.githubusercontent.com/hslam/log/master/output.png" width = "500" height = "153" alt="output" align=center>
+
 
 ### License
 This package is licensed under a MIT license (Copyright (c) 2019 Meng Huang)

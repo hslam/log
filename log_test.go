@@ -48,6 +48,12 @@ func TestInfo(t *testing.T) {
 	Infoln(1024, "HelloWorld", true)
 }
 
+func TestNotice(t *testing.T) {
+	Notice(1024, "HelloWorld", true)
+	Noticef("%d %s %t", 1024, "HelloWorld", true)
+	Noticeln(1024, "HelloWorld", true)
+}
+
 func TestWarn(t *testing.T) {
 	Warn(1024, "HelloWorld", true)
 	Warnf("%d %s %t", 1024, "HelloWorld", true)
@@ -70,10 +76,4 @@ func TestFatal(t *testing.T) {
 	Fatal(1024, "HelloWorld", true)
 	Fatalf("%d %s %t", 1024, "HelloWorld", true)
 	Fatalln(1024, "HelloWorld", true)
-}
-
-func TestOff(t *testing.T) {
-	Off(1024, "HelloWorld", true)
-	Offf("%d %s %t", 1024, "HelloWorld", true)
-	Offln(1024, "HelloWorld", true)
 }

@@ -68,15 +68,15 @@ func init() {
 }
 
 func initLog() {
-	debugLogger = log.New(out, blue+"["+logPrefix+"][D] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	traceLogger = log.New(out, cyan+"["+logPrefix+"][T] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	allLogger = log.New(out, white+"["+logPrefix+"][A] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	infoLogger = log.New(out, black+"["+logPrefix+"][I] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	noticeLogger = log.New(out, green+"["+logPrefix+"][N] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	warnLogger = log.New(out, yellow+"["+logPrefix+"][W] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	errorLogger = log.New(out, red+"["+logPrefix+"][E] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	panicLogger = log.New(out, red+"["+logPrefix+"][P] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	debugLogger = log.New(out, blue+"["+logPrefix+"][D] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	traceLogger = log.New(out, cyan+"["+logPrefix+"][T] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	allLogger = log.New(out, white+"["+logPrefix+"][A] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	infoLogger = log.New(out, black+"["+logPrefix+"][I] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	noticeLogger = log.New(out, green+"["+logPrefix+"][N] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	warnLogger = log.New(out, yellow+"["+logPrefix+"][W] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	errorLogger = log.New(out, red+"["+logPrefix+"][E] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	panicLogger = log.New(out, red+"["+logPrefix+"][P] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 //SetPrefix sets log's prefix
