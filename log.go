@@ -5,6 +5,7 @@
 package log
 
 import (
+	"io"
 	"log"
 	"os"
 )
@@ -14,46 +15,68 @@ import (
 type Level int
 
 const (
-
-	//DebugLevel defines the level of debug.
+	//DebugLevel defines the level of debug in test environments.
 	DebugLevel Level = 1
-	//TraceLevel defines the level of trace.
+	//TraceLevel defines the level of trace in test environments.
 	TraceLevel Level = 2
-	//AllLevel defines the level of all.
+	//AllLevel defines the lowest level in production environments.
 	AllLevel Level = 3
 	//InfoLevel defines the level of info.
 	InfoLevel Level = 4
+	//NoticeLevel defines the level of notice.
+	NoticeLevel Level = 5
 	//WarnLevel defines the level of warn.
-	WarnLevel Level = 5
+	WarnLevel Level = 6
 	//ErrorLevel defines the level of error.
-	ErrorLevel Level = 6
+	ErrorLevel Level = 7
 	//PanicLevel defines the level of panic.
-	PanicLevel Level = 7
+	PanicLevel Level = 8
 	//FatalLevel defines the level of fatal.
-	FatalLevel Level = 8
-	//OffLevel defines the level of off.
-	OffLevel Level = 9
-	//NoLevel defines the level of no log.
-	NoLevel Level = 99
+	FatalLevel Level = 9
+	//OffLevel defines the level of no log.
+	OffLevel Level = 10
 )
 
 var (
-	logPrefix   = "Log"
-	logLevel    Level
-	debugLogger *log.Logger
-	traceLogger *log.Logger
-	allLogger   *log.Logger
-	infoLogger  *log.Logger
-	warnLogger  *log.Logger
-	errorLogger *log.Logger
-	panicLogger *log.Logger
-	fatalLogger *log.Logger
-	offLogger   *log.Logger
+	out          io.Writer
+	logPrefix    = "Log"
+	logLevel     Level
+	debugLogger  *log.Logger
+	traceLogger  *log.Logger
+	allLogger    *log.Logger
+	infoLogger   *log.Logger
+	noticeLogger *log.Logger
+	warnLogger   *log.Logger
+	errorLogger  *log.Logger
+	panicLogger  *log.Logger
+	fatalLogger  *log.Logger
+	black        = string([]byte{27, 91, 57, 48, 109})
+	red          = string([]byte{27, 91, 51, 49, 109})
+	green        = string([]byte{27, 91, 51, 50, 109})
+	yellow       = string([]byte{27, 91, 51, 51, 109})
+	blue         = string([]byte{27, 91, 51, 52, 109})
+	magenta      = string([]byte{27, 91, 51, 53, 109})
+	cyan         = string([]byte{27, 91, 51, 54, 109})
+	white        = string([]byte{27, 91, 51, 55, 109})
+	reset        = string([]byte{27, 91, 48, 109})
 )
 
 func init() {
-	SetLevel(AllLevel)
+	SetOut(os.Stdout)
+	SetLevel(InfoLevel)
 	initLog()
+}
+
+func initLog() {
+	debugLogger = log.New(out, blue+"["+logPrefix+"][D] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	traceLogger = log.New(out, cyan+"["+logPrefix+"][T] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	allLogger = log.New(out, white+"["+logPrefix+"][A] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	infoLogger = log.New(out, black+"["+logPrefix+"][I] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	noticeLogger = log.New(out, green+"["+logPrefix+"][N] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	warnLogger = log.New(out, yellow+"["+logPrefix+"][W] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	errorLogger = log.New(out, red+"["+logPrefix+"][E] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	panicLogger = log.New(out, red+"["+logPrefix+"][P] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 //SetPrefix sets log's prefix
@@ -67,17 +90,10 @@ func SetLevel(level Level) {
 	logLevel = level
 }
 
-func initLog() {
-	debugLogger = log.New(os.Stdout, "["+logPrefix+"][D] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	traceLogger = log.New(os.Stdout, "["+logPrefix+"][T] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	allLogger = log.New(os.Stdout, "["+logPrefix+"][A] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	infoLogger = log.New(os.Stdout, "["+logPrefix+"][I] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	warnLogger = log.New(os.Stdout, "["+logPrefix+"][W] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	errorLogger = log.New(os.Stdout, "["+logPrefix+"][E] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	panicLogger = log.New(os.Stdout, "["+logPrefix+"][P] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	fatalLogger = log.New(os.Stdout, "["+logPrefix+"][F] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	offLogger = log.New(os.Stdout, "["+logPrefix+"][O] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-
+//SetOut sets log's writer. The out variable sets the
+// destination to which log data will be written.
+func SetOut(w io.Writer) {
+	out = w
 }
 
 //GetLevel returns log's level
@@ -169,6 +185,27 @@ func Infoln(v ...interface{}) {
 	}
 }
 
+// Notice is equivalent to log.Print() for notice.
+func Notice(v ...interface{}) {
+	if logLevel <= NoticeLevel {
+		noticeLogger.Print(v...)
+	}
+}
+
+// Noticef is equivalent to log.Printf() for notice.
+func Noticef(format string, v ...interface{}) {
+	if logLevel <= NoticeLevel {
+		noticeLogger.Printf(format, v...)
+	}
+}
+
+// Noticeln is equivalent to log.Println() for notice.
+func Noticeln(v ...interface{}) {
+	if logLevel <= NoticeLevel {
+		noticeLogger.Println(v...)
+	}
+}
+
 // Warn is equivalent to log.Print() for warn.
 func Warn(v ...interface{}) {
 	if logLevel <= WarnLevel {
@@ -250,26 +287,5 @@ func Fatalf(format string, v ...interface{}) {
 func Fatalln(v ...interface{}) {
 	if logLevel <= FatalLevel {
 		fatalLogger.Println(v...)
-	}
-}
-
-// Off is equivalent to log.Print() for off.
-func Off(v ...interface{}) {
-	if logLevel <= OffLevel {
-		offLogger.Print(v...)
-	}
-}
-
-// Offf is equivalent to log.Printf() for off.
-func Offf(format string, v ...interface{}) {
-	if logLevel <= OffLevel {
-		offLogger.Printf(format, v...)
-	}
-}
-
-// Offln is equivalent to log.Println() for off.
-func Offln(v ...interface{}) {
-	if logLevel <= OffLevel {
-		offLogger.Println(v...)
 	}
 }
