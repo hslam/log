@@ -135,15 +135,15 @@ func (l *Logger) GetLevel() Level {
 }
 
 func (l *Logger) init() {
-	l.debugLogger = log.New(l.out, blue+"["+logPrefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.traceLogger = log.New(l.out, cyan+"["+logPrefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.allLogger = log.New(l.out, white+"["+logPrefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.infoLogger = log.New(l.out, black+"["+logPrefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.noticeLogger = log.New(l.out, green+"["+logPrefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.warnLogger = log.New(l.out, yellow+"["+logPrefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.errorLogger = log.New(l.out, redBg+"["+logPrefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.panicLogger = log.New(l.out, red+"["+logPrefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.fatalLogger = log.New(l.out, magenta+"["+logPrefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.debugLogger = log.New(l.out, blue+"["+l.prefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.traceLogger = log.New(l.out, cyan+"["+l.prefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.allLogger = log.New(l.out, white+"["+l.prefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.infoLogger = log.New(l.out, black+"["+l.prefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.noticeLogger = log.New(l.out, green+"["+l.prefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.warnLogger = log.New(l.out, yellow+"["+l.prefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.errorLogger = log.New(l.out, redBg+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.panicLogger = log.New(l.out, red+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.fatalLogger = log.New(l.out, magenta+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 // Debug is equivalent to log.Print() for debug.
