@@ -56,7 +56,7 @@ func main() {
 ```
 
 ### Output
-<img src="https://raw.githubusercontent.com/hslam/log/master/output.png" width = "500" height = "153" alt="output" align=center>
+<img src="https://raw.githubusercontent.com/hslam/log/master/output.png" width = "430" height = "138" alt="output" align=center>
 
 
 ### License

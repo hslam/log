@@ -41,6 +41,7 @@ var (
 	logPrefix = "Log"
 	logger    = New()
 	redBg     = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
+	magentaBg = string([]byte{27, 91, 57, 55, 59, 52, 53, 109})
 	black     = string([]byte{27, 91, 57, 48, 109})
 	red       = string([]byte{27, 91, 51, 49, 109})
 	green     = string([]byte{27, 91, 51, 50, 109})
@@ -141,9 +142,9 @@ func (l *Logger) init() {
 	l.infoLogger = log.New(l.out, black+"["+l.prefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 	l.noticeLogger = log.New(l.out, green+"["+l.prefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 	l.warnLogger = log.New(l.out, yellow+"["+l.prefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.errorLogger = log.New(l.out, redBg+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.panicLogger = log.New(l.out, red+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.fatalLogger = log.New(l.out, magenta+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.errorLogger = log.New(l.out, red+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.panicLogger = log.New(l.out, magentaBg+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.fatalLogger = log.New(l.out, redBg+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 // Debug is equivalent to log.Print() for debug.
