@@ -5,20 +5,22 @@
 package log
 
 import (
+	"os"
 	"testing"
 )
 
-func TestSetPrefix(t *testing.T) {
+func TestPrefix(t *testing.T) {
 	var prefix = "log"
 	SetPrefix(prefix)
-	if prefix != logPrefix {
-		t.Errorf("error %s != %s", prefix, logPrefix)
+	if prefix != GetPrefix() {
+		t.Errorf("error %s != %s", prefix, GetPrefix())
 	}
 }
 
-func TestSetLevel(t *testing.T) {
+func TestLevel(t *testing.T) {
 	var level = DebugLevel
 	SetLevel(level)
+	SetOut(os.Stdout)
 	if level != GetLevel() {
 		t.Errorf("error %d != %d", level, GetLevel())
 	}

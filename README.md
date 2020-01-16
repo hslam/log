@@ -40,17 +40,18 @@ import (
 )
 
 func main() {
-	log.SetPrefix("LogPrefix")
-	log.SetLevel(log.DebugLevel)
-	log.Debugf("%d %s %t", 1024, "HelloWorld", true)
-	log.Tracef("%d %s %t", 1024, "HelloWorld", true)
-	log.Allf("%d %s %t", 1024, "HelloWorld", true)
-	log.Infof("%d %s %t", 1024, "HelloWorld", true)
-	log.Noticef("%d %s %t", 1024, "HelloWorld", true)
-	log.Warnf("%d %s %t", 1024, "HelloWorld", true)
-	log.Errorf("%d %s %t", 1024, "HelloWorld", true)
-	log.Panicf("%d %s %t", 1024, "HelloWorld", true)
-	log.Fatalf("%d %s %t", 1024, "HelloWorld", true)
+	logger := log.New()
+	logger.SetPrefix("LogPrefix")
+	logger.SetLevel(log.DebugLevel)
+	logger.Debugf("%d %s %t", 1024, "HelloWorld", true)
+	logger.Tracef("%d %s %t", 1024, "HelloWorld", true)
+	logger.Allf("%d %s %t", 1024, "HelloWorld", true)
+	logger.Infof("%d %s %t", 1024, "HelloWorld", true)
+	logger.Noticef("%d %s %t", 1024, "HelloWorld", true)
+	logger.Warnf("%d %s %t", 1024, "HelloWorld", true)
+	logger.Errorf("%d %s %t", 1024, "HelloWorld", true)
+	logger.Panicf("%d %s %t", 1024, "HelloWorld", true)
+	logger.Fatalf("%d %s %t", 1024, "HelloWorld", true)
 }
 ```
 
