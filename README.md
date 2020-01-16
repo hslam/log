@@ -13,12 +13,12 @@ Package log implements multilevel logging.
 * trace
 * all
 * info
+* notice
 * warn
 * error
 * panic
 * fatal
 * off
-* no log
 
 ## Get started
 
@@ -46,26 +46,17 @@ func main() {
 	log.Tracef("%d %s %t", 1024, "HelloWorld", true)
 	log.Allf("%d %s %t", 1024, "HelloWorld", true)
 	log.Infof("%d %s %t", 1024, "HelloWorld", true)
+	log.Noticef("%d %s %t", 1024, "HelloWorld", true)
 	log.Warnf("%d %s %t", 1024, "HelloWorld", true)
 	log.Errorf("%d %s %t", 1024, "HelloWorld", true)
 	log.Panicf("%d %s %t", 1024, "HelloWorld", true)
 	log.Fatalf("%d %s %t", 1024, "HelloWorld", true)
-	log.Offf("%d %s %t", 1024, "HelloWorld", true)
 }
 ```
 
 ### Output
-```
-[LogPrefix][D] 2020/01/15 22:26:50.944903 1024 HelloWorld true
-[LogPrefix][T] 2020/01/15 22:26:50.944912 1024 HelloWorld true
-[LogPrefix][A] 2020/01/15 22:26:50.944914 1024 HelloWorld true
-[LogPrefix][I] 2020/01/15 22:26:50.944916 1024 HelloWorld true
-[LogPrefix][W] 2020/01/15 22:26:50.944917 1024 HelloWorld true
-[LogPrefix][E] 2020/01/15 22:26:50.944919 1024 HelloWorld true
-[LogPrefix][P] 2020/01/15 22:26:50.944920 1024 HelloWorld true
-[LogPrefix][F] 2020/01/15 22:26:50.944922 1024 HelloWorld true
-[LogPrefix][O] 2020/01/15 22:26:50.944923 1024 HelloWorld true
-```
+<img src="http://raw.githubusercontent.com/hslam/log/master/output.png" width = "500" height = "153" alt="output" align=center>
+
 
 ### License
 This package is licensed under a MIT license (Copyright (c) 2019 Meng Huang)
