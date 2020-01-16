@@ -50,6 +50,7 @@ var (
 	errorLogger  *log.Logger
 	panicLogger  *log.Logger
 	fatalLogger  *log.Logger
+	redBg        = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
 	black        = string([]byte{27, 91, 57, 48, 109})
 	red          = string([]byte{27, 91, 51, 49, 109})
 	green        = string([]byte{27, 91, 51, 50, 109})
@@ -68,15 +69,15 @@ func init() {
 }
 
 func initLog() {
-	debugLogger = log.New(out, blue+"["+logPrefix+"][D] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	traceLogger = log.New(out, cyan+"["+logPrefix+"][T] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	allLogger = log.New(out, white+"["+logPrefix+"][A] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	infoLogger = log.New(out, black+"["+logPrefix+"][I] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	noticeLogger = log.New(out, green+"["+logPrefix+"][N] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	warnLogger = log.New(out, yellow+"["+logPrefix+"][W] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	errorLogger = log.New(out, red+"["+logPrefix+"][E] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	panicLogger = log.New(out, red+"["+logPrefix+"][P] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F] "+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	debugLogger = log.New(out, blue+"["+logPrefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	traceLogger = log.New(out, cyan+"["+logPrefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	allLogger = log.New(out, white+"["+logPrefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	infoLogger = log.New(out, black+"["+logPrefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	noticeLogger = log.New(out, green+"["+logPrefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	warnLogger = log.New(out, yellow+"["+logPrefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	errorLogger = log.New(out, redBg+"["+logPrefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	panicLogger = log.New(out, red+"["+logPrefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	fatalLogger = log.New(out, magenta+"["+logPrefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
 }
 
 //SetPrefix sets log's prefix
