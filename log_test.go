@@ -5,6 +5,7 @@
 package log
 
 import (
+	"log"
 	"os"
 	"testing"
 )
@@ -23,6 +24,17 @@ func TestLevel(t *testing.T) {
 	SetOut(os.Stdout)
 	if level != GetLevel() {
 		t.Errorf("error %d != %d", level, GetLevel())
+	}
+}
+
+func TestMicroseconds(t *testing.T) {
+	SetMicroseconds(true)
+	if logger.microseconds != log.Lmicroseconds {
+		t.Errorf("error %d != %d", logger.microseconds, log.Lmicroseconds)
+	}
+	SetMicroseconds(false)
+	if logger.microseconds != 0 {
+		t.Errorf("error %d != %d", logger.microseconds, 0)
 	}
 }
 
