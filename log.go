@@ -58,6 +58,7 @@ type Logger struct {
 	prefix       string
 	out          io.Writer
 	level        Level
+	microseconds int
 	debugLogger  *log.Logger
 	traceLogger  *log.Logger
 	allLogger    *log.Logger
@@ -112,6 +113,21 @@ func (l *Logger) SetLevel(level Level) {
 	l.init()
 }
 
+//SetMicroseconds sets log's microseconds
+func SetMicroseconds(microseconds bool) {
+	logger.SetMicroseconds(microseconds)
+}
+
+//SetMicroseconds sets log's microseconds
+func (l *Logger) SetMicroseconds(microseconds bool) {
+	if microseconds {
+		l.microseconds = log.Lmicroseconds
+	} else {
+		l.microseconds = 0
+	}
+	l.init()
+}
+
 //SetOut sets log's writer. The out variable sets the
 // destination to which log data will be written.
 func SetOut(w io.Writer) {
@@ -136,15 +152,15 @@ func (l *Logger) GetLevel() Level {
 }
 
 func (l *Logger) init() {
-	l.debugLogger = log.New(l.out, blue+"["+l.prefix+"][D]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.traceLogger = log.New(l.out, cyan+"["+l.prefix+"][T]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.allLogger = log.New(l.out, white+"["+l.prefix+"][A]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.infoLogger = log.New(l.out, black+"["+l.prefix+"][I]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.noticeLogger = log.New(l.out, green+"["+l.prefix+"][N]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.warnLogger = log.New(l.out, yellow+"["+l.prefix+"][W]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.errorLogger = log.New(l.out, red+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.panicLogger = log.New(l.out, magentaBg+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
-	l.fatalLogger = log.New(l.out, redBg+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.Lmicroseconds|log.LUTC)
+	l.debugLogger = log.New(l.out, blue+"["+l.prefix+"][D]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.traceLogger = log.New(l.out, cyan+"["+l.prefix+"][T]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.allLogger = log.New(l.out, white+"["+l.prefix+"][A]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.infoLogger = log.New(l.out, black+"["+l.prefix+"][I]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.noticeLogger = log.New(l.out, green+"["+l.prefix+"][N]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.warnLogger = log.New(l.out, yellow+"["+l.prefix+"][W]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.errorLogger = log.New(l.out, red+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.panicLogger = log.New(l.out, magentaBg+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	l.fatalLogger = log.New(l.out, redBg+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
 }
 
 // Debug is equivalent to log.Print() for debug.

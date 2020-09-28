@@ -8,6 +8,7 @@ func main() {
 	logger := log.New()
 	logger.SetPrefix("LogPrefix")
 	logger.SetLevel(log.DebugLevel)
+	logger.SetMicroseconds(false)
 	logger.Debugf("%d %s %t", 1024, "HelloWorld", true)
 	logger.Tracef("%d %s %t", 1024, "HelloWorld", true)
 	logger.Allf("%d %s %t", 1024, "HelloWorld", true)
