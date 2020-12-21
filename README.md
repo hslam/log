@@ -1,6 +1,6 @@
 # codec
 [![GoDoc](https://godoc.org/github.com/hslam/log?status.svg)](https://godoc.org/github.com/hslam/log)
-[![Build Status](https://travis-ci.org/hslam/log.svg?branch=master)](https://travis-ci.org/hslam/log)
+[![Build Status](https://github.com/hslam/log/workflows/build/badge.svg)](https://github.com/hslam/log/actions)
 [![codecov](https://codecov.io/gh/hslam/log/branch/master/graph/badge.svg)](https://codecov.io/gh/hslam/log)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hslam/log?v=7e100)](https://goreportcard.com/report/github.com/hslam/log)
 [![GitHub release](https://img.shields.io/github/release/hslam/log.svg)](https://github.com/hslam/log/releases/latest)
