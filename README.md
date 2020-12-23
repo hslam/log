@@ -32,7 +32,7 @@ import "github.com/hslam/log"
 ```
 ### Usage
 #### Example
-```
+```go
 package main
 
 import (
