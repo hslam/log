@@ -9,16 +9,23 @@
 Package log implements multilevel logging.
 
 ## Feature
-* debug
-* trace
-* all
-* info
-* notice
-* warn
-* error
-* panic
-* fatal
-* off
+* Custom prefix
+* Multiple levels
+* Highlight color
+* File line
+* Call stack
+
+## Level
+* Debug
+* Trace
+* All
+* Info
+* Notice
+* Warn
+* Error
+* Panic
+* Fatal
+* Off
 
 ## Get started
 
@@ -43,7 +50,8 @@ func main() {
 	logger := log.New()
 	logger.SetPrefix("LogPrefix")
 	logger.SetLevel(log.DebugLevel)
-	logger.SetMicroseconds(false)
+	logger.SetHighlight(true)
+	logger.SetLine(true)
 	logger.Debugf("%d %s %t", 1024, "HelloWorld", true)
 	logger.Tracef("%d %s %t", 1024, "HelloWorld", true)
 	logger.Allf("%d %s %t", 1024, "HelloWorld", true)
@@ -51,14 +59,21 @@ func main() {
 	logger.Noticef("%d %s %t", 1024, "HelloWorld", true)
 	logger.Warnf("%d %s %t", 1024, "HelloWorld", true)
 	logger.Errorf("%d %s %t", 1024, "HelloWorld", true)
-	logger.Panicf("%d %s %t", 1024, "HelloWorld", true)
 	logger.Fatalf("%d %s %t", 1024, "HelloWorld", true)
 }
 ```
 
 ### Output
-<img src="https://raw.githubusercontent.com/hslam/log/master/output.png" width = "382" height = "136" alt="output" align=center>
-
+```
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][D][main.go:13][1024 HelloWorld true]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][T][main.go:14][1024 HelloWorld true][stack="main.main\n\t/filepath/main.go:14\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:225"]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][A][main.go:15][1024 HelloWorld true]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][I][main.go:16][1024 HelloWorld true]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][N][main.go:17][1024 HelloWorld true]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][W][main.go:18][1024 HelloWorld true]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][E][main.go:19][1024 HelloWorld true][stack="main.main\n\t/filepath/main.go:19\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:225"]
+[LogPrefix][2022/01/20 17:42:26.891 +08:00][F][main.go:20][1024 HelloWorld true][stack="main.main\n\t/filepath/main.go:20\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:225"]
+```
 
 ### License
 This package is licensed under a MIT license (Copyright (c) 2019 Meng Huang)

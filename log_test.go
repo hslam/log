@@ -5,7 +5,6 @@
 package log
 
 import (
-	"log"
 	"os"
 	"testing"
 )
@@ -27,15 +26,38 @@ func TestLevel(t *testing.T) {
 	}
 }
 
-func TestMicroseconds(t *testing.T) {
-	SetMicroseconds(true)
-	if logger.microseconds != log.Lmicroseconds {
-		t.Errorf("error %d != %d", logger.microseconds, log.Lmicroseconds)
+func TestSetHighlight(t *testing.T) {
+	SetHighlight(true)
+	if !logger.highlight {
+		t.Error("")
 	}
-	SetMicroseconds(false)
-	if logger.microseconds != 0 {
-		t.Errorf("error %d != %d", logger.microseconds, 0)
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+	SetHighlight(false)
+	if logger.highlight {
+		t.Error("")
 	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+}
+
+func TestSetLine(t *testing.T) {
+	SetLine(true)
+	if !logger.line {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+	SetLine(false)
+	if logger.line {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
 }
 
 func TestDebug(t *testing.T) {
@@ -81,12 +103,33 @@ func TestError(t *testing.T) {
 }
 
 func TestPanic(t *testing.T) {
-	Panic(1024, "HelloWorld", true)
-	Panicf("%d %s %t", 1024, "HelloWorld", true)
-	Panicln(1024, "HelloWorld", true)
+	func() {
+		defer func() {
+			if e := recover(); e == nil {
+				t.Error()
+			}
+		}()
+		Panic(1024, "HelloWorld", true)
+	}()
+	func() {
+		defer func() {
+			if e := recover(); e == nil {
+				t.Error()
+			}
+		}()
+		Panicf("%d %s %t", 1024, "HelloWorld", true)
+	}()
+	func() {
+		defer func() {
+			if e := recover(); e == nil {
+				t.Error()
+			}
+		}()
+		Panicln(1024, "HelloWorld", true)
+	}()
 }
 
-func TestFatal(t *testing.T) {
+func testFatal(t *testing.T) {
 	Fatal(1024, "HelloWorld", true)
 	Fatalf("%d %s %t", 1024, "HelloWorld", true)
 	Fatalln(1024, "HelloWorld", true)

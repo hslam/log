@@ -5,77 +5,346 @@
 package log
 
 import (
+	"bytes"
+	"fmt"
 	"io"
-	"log"
 	"os"
+	"path"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
 )
 
 // Level defines the level for log.
 // Higher levels log less info.
-type Level int
+type Level uint8
 
 const (
 	//DebugLevel defines the level of debug in test environments.
-	DebugLevel Level = 1
+	DebugLevel Level = 0
 	//TraceLevel defines the level of trace in test environments.
-	TraceLevel Level = 2
+	TraceLevel Level = 1
 	//AllLevel defines the lowest level in production environments.
-	AllLevel Level = 3
+	AllLevel Level = 2
 	//InfoLevel defines the level of info.
-	InfoLevel Level = 4
+	InfoLevel Level = 3
 	//NoticeLevel defines the level of notice.
-	NoticeLevel Level = 5
+	NoticeLevel Level = 4
 	//WarnLevel defines the level of warn.
-	WarnLevel Level = 6
+	WarnLevel Level = 5
 	//ErrorLevel defines the level of error.
-	ErrorLevel Level = 7
+	ErrorLevel Level = 6
 	//PanicLevel defines the level of panic.
-	PanicLevel Level = 8
+	PanicLevel Level = 7
 	//FatalLevel defines the level of fatal.
-	FatalLevel Level = 9
+	FatalLevel Level = 8
 	//OffLevel defines the level of no log.
-	OffLevel Level = 10
+	OffLevel Level = 9
+)
+
+const (
+	ignorePackagePrefix = "github.com/hslam/log."
+	logPrefix           = "Log"
 )
 
 var (
-	logPrefix = "Log"
 	logger    = New()
-	redBg     = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
-	magentaBg = string([]byte{27, 91, 57, 55, 59, 52, 53, 109})
-	black     = string([]byte{27, 91, 57, 48, 109})
-	red       = string([]byte{27, 91, 51, 49, 109})
-	green     = string([]byte{27, 91, 51, 50, 109})
-	yellow    = string([]byte{27, 91, 51, 51, 109})
-	blue      = string([]byte{27, 91, 51, 52, 109})
-	magenta   = string([]byte{27, 91, 51, 53, 109})
-	cyan      = string([]byte{27, 91, 51, 54, 109})
-	white     = string([]byte{27, 91, 51, 55, 109})
-	reset     = string([]byte{27, 91, 48, 109})
+	bufPool   sync.Pool
+	pcPool    sync.Pool
+	bigpcPool sync.Pool
 )
+
+// colors
+var (
+	redBg     = []byte{27, 91, 57, 55, 59, 52, 49, 109}
+	magentaBg = []byte{27, 91, 57, 55, 59, 52, 53, 109}
+	black     = []byte{27, 91, 57, 48, 109}
+	red       = []byte{27, 91, 51, 49, 109}
+	green     = []byte{27, 91, 51, 50, 109}
+	yellow    = []byte{27, 91, 51, 51, 109}
+	blue      = []byte{27, 91, 51, 52, 109}
+	magenta   = []byte{27, 91, 51, 53, 109}
+	cyan      = []byte{27, 91, 51, 54, 109}
+	white     = []byte{27, 91, 51, 55, 109}
+	reset     = []byte{27, 91, 48, 109}
+)
+
+// newBuffer returns a new buffer writer.
+func newBuffer() *bytes.Buffer {
+	if v := bufPool.Get(); v != nil {
+		buf := v.(*bytes.Buffer)
+		return buf
+	}
+	return bytes.NewBuffer(nil)
+}
+
+// freeBuffer frees the buffer writer.
+func freeBuffer(buf *bytes.Buffer) {
+	buf.Reset()
+	bufPool.Put(buf)
+}
+
+const pcs = 16
+
+func newPC() []uintptr {
+	if v := pcPool.Get(); v != nil {
+		pc := v.([]uintptr)
+		return pc
+	}
+	return make([]uintptr, pcs)
+}
+
+func freePC(pc []uintptr) {
+	if cap(pc) == pcs {
+		pcPool.Put(pc[:pcs])
+	}
+}
+
+const bigpcs = 4096
+
+func newBigPC() []uintptr {
+	if v := bigpcPool.Get(); v != nil {
+		pc := v.([]uintptr)
+		return pc
+	}
+	return make([]uintptr, bigpcs)
+}
+
+func freeBigPC(pc []uintptr) {
+	if cap(pc) == bigpcs {
+		bigpcPool.Put(pc[:bigpcs])
+	}
+}
+
+// relevantCaller searches the call stack for the first function outside of log.
+// The purpose of this function is to provide more helpful error messages.
+func relevantCaller() runtime.Frame {
+	pc := newPC()
+	n := runtime.Callers(1, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	var frame runtime.Frame
+	for {
+		frame, more := frames.Next()
+		if !strings.HasPrefix(frame.Function, ignorePackagePrefix) {
+			freePC(pc)
+			return frame
+		}
+		if !more {
+			break
+		}
+	}
+	freePC(pc)
+	return frame
+}
+
+const (
+	newline     = "\\n"
+	frameFormat = "%s\\n\\t%s:%d"
+)
+
+func callStack() (s string) {
+	var stack []string
+	pc := newBigPC()
+	n := runtime.Callers(1, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	for {
+		frame, more := frames.Next()
+		if !strings.HasPrefix(frame.Function, ignorePackagePrefix) {
+			stack = append(stack, fmt.Sprintf(frameFormat, frame.Function, frame.File, frame.Line))
+		}
+		if !more {
+			break
+		}
+	}
+	if len(stack) > 0 {
+		stack = stack[:len(stack)-1]
+	}
+	freeBigPC(pc)
+	return strings.Join(stack, newline)
+}
+
+// log defines the base log interface.
+type log interface {
+	// Output writes the log info to the io.Writer.
+	Output(w io.Writer, b []byte)
+}
+
+// body implements the log interface.
+type body struct {
+}
+
+// newBody returns a new log body.
+func newBody() log {
+	return body{}
+}
+
+var (
+	front = []byte("[")
+	back  = []byte("]")
+)
+
+// Output writes the log info to the io.Writer.
+func (l body) Output(w io.Writer, b []byte) {
+	w.Write(front)
+	w.Write(b)
+	w.Write(back)
+}
+
+// stackField implements the log interface.
+type stackField struct {
+	l log
+}
+
+// withStackField returns a new log with the stack field.
+func withStackField(l log) log {
+	return &stackField{l}
+}
+
+const stackFormat = "[stack=\"%s\"]"
+
+// Output writes the log info to the io.Writer.
+func (l *stackField) Output(w io.Writer, b []byte) {
+	l.l.Output(w, b)
+	fmt.Fprintf(w, stackFormat, callStack())
+}
+
+// lineField implements the log interface.
+type lineField struct {
+	l log
+}
+
+// withLineField returns a new log with the line field.
+func withLineField(l log) log {
+	return &lineField{l}
+}
+
+const callerFormat = "[%s:%d]"
+
+// Output writes the log info to the io.Writer.
+func (l *lineField) Output(w io.Writer, b []byte) {
+	caller := relevantCaller()
+	fmt.Fprintf(w, callerFormat, path.Base(caller.File), caller.Line)
+	l.l.Output(w, b)
+}
+
+// levelField implements the log interface.
+type levelField struct {
+	l     log
+	level []byte
+}
+
+// withLevelField returns a new log with the level field.
+func withLevelField(l log, level string) log {
+	return &levelField{l, []byte("[" + level + "]")}
+}
+
+// Output writes the log info to the io.Writer.
+func (l *levelField) Output(w io.Writer, b []byte) {
+	w.Write(l.level)
+	l.l.Output(w, b)
+}
+
+// timeField implements the log interface.
+type timeField struct {
+	l log
+}
+
+// withTimeField returns a new log with the time field.
+func withTimeField(l log) log {
+	return &timeField{l}
+}
+
+const (
+	timeFormat    = "[2006/01/02 15:04:05.000 -07:00]"
+	timeFormatLen = len(timeFormat)
+)
+
+// Output writes the log info to the io.Writer.
+func (l *timeField) Output(w io.Writer, b []byte) {
+	var buf [timeFormatLen]byte
+	var tb = buf[:0]
+	time.Now().AppendFormat(tb, timeFormat)
+	w.Write(tb[:timeFormatLen])
+	l.l.Output(w, b)
+}
+
+// prefixField implements the log interface.
+type prefixField struct {
+	l    log
+	name []byte
+}
+
+// withPrefixField returns a new log with the prefix field.
+func withPrefixField(l log, prefix string) log {
+	return &prefixField{l, []byte("[" + prefix + "]")}
+}
+
+// Output writes the log info to the io.Writer.
+func (l *prefixField) Output(w io.Writer, b []byte) {
+	w.Write(l.name)
+	l.l.Output(w, b)
+}
+
+// highlightField implements the log interface.
+type highlightField struct {
+	l     log
+	color []byte
+}
+
+// withHighlightField returns a new log with the highlight field.
+func withHighlightField(l log, color []byte) log {
+	return &highlightField{l, color}
+}
+
+// Output writes the log info to the io.Writer.
+func (l *highlightField) Output(w io.Writer, b []byte) {
+	w.Write(l.color)
+	l.l.Output(w, b)
+	w.Write(reset)
+}
+
+var levels = [9]string{"D", "T", "A", "I", "N", "W", "E", "P", "F"}
+var colors = [9][]byte{blue, cyan, white, black, green, yellow, red, magentaBg, redBg}
+
+func newLog(prefix string, level Level, highlight, line bool) log {
+	l := newBody()
+	if line {
+		l = withLineField(l)
+	}
+	if level >= ErrorLevel || level == TraceLevel {
+		l = withStackField(l)
+	}
+	l = withLevelField(l, levels[level])
+	l = withTimeField(l)
+	if len(prefix) > 0 {
+		l = withPrefixField(l, prefix)
+	}
+	color := colors[level]
+	if len(color) > 0 && highlight {
+		l = withHighlightField(l, color)
+	}
+	return l
+}
 
 // Logger defines the logger.
 type Logger struct {
-	prefix       string
-	out          io.Writer
-	level        Level
-	microseconds int
-	debugLogger  *log.Logger
-	traceLogger  *log.Logger
-	allLogger    *log.Logger
-	infoLogger   *log.Logger
-	noticeLogger *log.Logger
-	warnLogger   *log.Logger
-	errorLogger  *log.Logger
-	panicLogger  *log.Logger
-	fatalLogger  *log.Logger
+	mu        sync.Mutex
+	out       io.Writer
+	prefix    string
+	level     Level
+	highlight bool
+	line      bool
+	logs      [9]log
 }
 
 // New creates a new Logger.
 func New() *Logger {
 	l := &Logger{
-		prefix: logPrefix,
 		out:    os.Stdout,
+		prefix: logPrefix,
 		level:  InfoLevel,
+		line:   true,
 	}
 	l.init()
 	return l
@@ -113,18 +382,25 @@ func (l *Logger) SetLevel(level Level) {
 	l.init()
 }
 
-//SetMicroseconds sets log's microseconds
-func SetMicroseconds(microseconds bool) {
-	logger.SetMicroseconds(microseconds)
+//SetHighlight sets whether to enable the highlight field.
+func SetHighlight(highlight bool) {
+	logger.SetHighlight(highlight)
 }
 
-//SetMicroseconds sets log's microseconds
-func (l *Logger) SetMicroseconds(microseconds bool) {
-	if microseconds {
-		l.microseconds = log.Lmicroseconds
-	} else {
-		l.microseconds = 0
-	}
+//SetHighlight sets whether to enable the highlight field.
+func (l *Logger) SetHighlight(highlight bool) {
+	l.highlight = highlight
+	l.init()
+}
+
+//SetLine sets whether to enable the line field .
+func SetLine(line bool) {
+	logger.SetLine(line)
+}
+
+//SetLine sets whether to enable the line field .
+func (l *Logger) SetLine(line bool) {
+	l.line = line
 	l.init()
 }
 
@@ -152,203 +428,234 @@ func (l *Logger) GetLevel() Level {
 }
 
 func (l *Logger) init() {
-	l.debugLogger = log.New(l.out, blue+"["+l.prefix+"][D]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.traceLogger = log.New(l.out, cyan+"["+l.prefix+"][T]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.allLogger = log.New(l.out, white+"["+l.prefix+"][A]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.infoLogger = log.New(l.out, black+"["+l.prefix+"][I]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.noticeLogger = log.New(l.out, green+"["+l.prefix+"][N]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.warnLogger = log.New(l.out, yellow+"["+l.prefix+"][W]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.errorLogger = log.New(l.out, red+"["+l.prefix+"][E]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.panicLogger = log.New(l.out, magentaBg+"["+l.prefix+"][P]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
-	l.fatalLogger = log.New(l.out, redBg+"["+l.prefix+"][F]"+reset, log.Ldate|log.Ltime|log.LUTC|l.microseconds)
+	for i := 0; i < 9; i++ {
+		l.logs[i] = newLog(l.prefix, Level(i), l.highlight, l.line)
+	}
+}
+
+func (l *Logger) logout(level Level, b []byte) {
+	buf := newBuffer()
+	l.logs[level].Output(buf, bytes.TrimSpace(b))
+	fmt.Fprintln(buf)
+	l.mu.Lock()
+	l.out.Write(buf.Bytes())
+	l.mu.Unlock()
+	freeBuffer(buf)
+}
+
+func (l *Logger) print(level Level, v ...interface{}) {
+	body := newBuffer()
+	fmt.Fprint(body, v...)
+	l.logout(level, body.Bytes())
+	freeBuffer(body)
+}
+
+func (l *Logger) printf(level Level, format string, v ...interface{}) {
+	body := newBuffer()
+	fmt.Fprintf(body, format, v...)
+	l.logout(level, body.Bytes())
+	freeBuffer(body)
+}
+
+func (l *Logger) println(level Level, v ...interface{}) {
+	body := newBuffer()
+	fmt.Fprintln(body, v...)
+	l.logout(level, body.Bytes())
+	freeBuffer(body)
 }
 
 // Debug is equivalent to log.Print() for debug.
 func (l *Logger) Debug(v ...interface{}) {
 	if l.level <= DebugLevel {
-		l.debugLogger.Print(v...)
+		l.print(DebugLevel, v...)
 	}
 }
 
 // Debugf is equivalent to log.Printf() for debug.
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.level <= DebugLevel {
-		l.debugLogger.Printf(format, v...)
+		l.printf(DebugLevel, format, v...)
 	}
 }
 
 // Debugln is equivalent to log.Println() for debug.
 func (l *Logger) Debugln(v ...interface{}) {
 	if l.level <= DebugLevel {
-		l.debugLogger.Println(v...)
+		l.println(DebugLevel, v...)
 	}
 }
 
 // Trace is equivalent to log.Print() for trace.
 func (l *Logger) Trace(v ...interface{}) {
 	if l.level <= TraceLevel {
-		l.traceLogger.Print(v...)
+		l.print(TraceLevel, v...)
 	}
 }
 
 // Tracef is equivalent to log.Printf() for trace.
 func (l *Logger) Tracef(format string, v ...interface{}) {
 	if l.level <= TraceLevel {
-		l.traceLogger.Printf(format, v...)
+		l.printf(TraceLevel, format, v...)
 	}
 }
 
 // Traceln is equivalent to log.Println() for trace.
 func (l *Logger) Traceln(v ...interface{}) {
 	if l.level <= TraceLevel {
-		l.traceLogger.Println(v...)
+		l.println(TraceLevel, v...)
 	}
 }
 
 // All is equivalent to log.Print() for all log.
 func (l *Logger) All(v ...interface{}) {
 	if l.level <= AllLevel {
-		l.allLogger.Print(v...)
+		l.print(AllLevel, v...)
 	}
 }
 
 // Allf is equivalent to log.Printf() for all log.
 func (l *Logger) Allf(format string, v ...interface{}) {
 	if l.level <= AllLevel {
-		l.allLogger.Printf(format, v...)
+		l.printf(AllLevel, format, v...)
 	}
 }
 
 // Allln is equivalent to log.Println() for all log.
 func (l *Logger) Allln(v ...interface{}) {
 	if l.level <= AllLevel {
-		l.allLogger.Println(v...)
+		l.println(AllLevel, v...)
 	}
 }
 
 // Info is equivalent to log.Print() for info.
 func (l *Logger) Info(v ...interface{}) {
 	if l.level <= InfoLevel {
-		l.infoLogger.Print(v...)
+		l.print(InfoLevel, v...)
 	}
 }
 
 // Infof is equivalent to log.Printf() for info.
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.level <= InfoLevel {
-		l.infoLogger.Printf(format, v...)
+		l.printf(InfoLevel, format, v...)
 	}
 }
 
 // Infoln is equivalent to log.Println() for info.
 func (l *Logger) Infoln(v ...interface{}) {
 	if l.level <= InfoLevel {
-		l.infoLogger.Println(v...)
+		l.println(InfoLevel, v...)
 	}
 }
 
 // Notice is equivalent to log.Print() for notice.
 func (l *Logger) Notice(v ...interface{}) {
 	if l.level <= NoticeLevel {
-		l.noticeLogger.Print(v...)
+		l.print(NoticeLevel, v...)
 	}
 }
 
 // Noticef is equivalent to log.Printf() for notice.
 func (l *Logger) Noticef(format string, v ...interface{}) {
 	if l.level <= NoticeLevel {
-		l.noticeLogger.Printf(format, v...)
+		l.printf(NoticeLevel, format, v...)
 	}
 }
 
 // Noticeln is equivalent to log.Println() for notice.
 func (l *Logger) Noticeln(v ...interface{}) {
 	if l.level <= NoticeLevel {
-		l.noticeLogger.Println(v...)
+		l.println(NoticeLevel, v...)
 	}
 }
 
 // Warn is equivalent to log.Print() for warn.
 func (l *Logger) Warn(v ...interface{}) {
 	if l.level <= WarnLevel {
-		l.warnLogger.Print(v...)
+		l.print(WarnLevel, v...)
 	}
 }
 
 // Warnf is equivalent to log.Printf() for warn.
 func (l *Logger) Warnf(format string, v ...interface{}) {
 	if l.level <= InfoLevel {
-		l.warnLogger.Printf(format, v...)
+		l.printf(WarnLevel, format, v...)
 	}
 }
 
 // Warnln is equivalent to log.Println() for warn.
 func (l *Logger) Warnln(v ...interface{}) {
 	if l.level <= WarnLevel {
-		l.warnLogger.Println(v...)
+		l.println(WarnLevel, v...)
 	}
 }
 
 // Error is equivalent to log.Print() for error.
 func (l *Logger) Error(v ...interface{}) {
 	if l.level <= ErrorLevel {
-		l.errorLogger.Print(v...)
+		l.print(ErrorLevel, v...)
 	}
 }
 
 // Errorf is equivalent to log.Printf() for error.
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.level <= ErrorLevel {
-		l.errorLogger.Printf(format, v...)
+		l.printf(ErrorLevel, format, v...)
 	}
 }
 
 // Errorln is equivalent to log.Println() for error.
 func (l *Logger) Errorln(v ...interface{}) {
 	if l.level <= ErrorLevel {
-		l.errorLogger.Println(v...)
+		l.println(ErrorLevel, v...)
 	}
 }
 
 // Panic is equivalent to log.Print() for panic.
 func (l *Logger) Panic(v ...interface{}) {
 	if l.level <= PanicLevel {
-		l.panicLogger.Print(v...)
+		l.print(PanicLevel, v...)
+		panic(fmt.Sprint(v...))
 	}
 }
 
 // Panicf is equivalent to log.Printf() for panic.
 func (l *Logger) Panicf(format string, v ...interface{}) {
 	if l.level <= PanicLevel {
-		l.panicLogger.Printf(format, v...)
+		l.printf(PanicLevel, format, v...)
+		panic(fmt.Sprintf(format, v...))
 	}
 }
 
 // Panicln is equivalent to log.Println() for panic.
 func (l *Logger) Panicln(v ...interface{}) {
 	if l.level <= PanicLevel {
-		l.panicLogger.Println(v...)
+		l.println(PanicLevel, v...)
+		panic(fmt.Sprintln(v...))
 	}
 }
 
 // Fatal is equivalent to log.Print() for fatal.
 func (l *Logger) Fatal(v ...interface{}) {
 	if l.level <= FatalLevel {
-		l.fatalLogger.Print(v...)
+		l.print(FatalLevel, v...)
+		os.Exit(1)
 	}
 }
 
 // Fatalf is equivalent to log.Printf() for fatal.
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	if l.level <= FatalLevel {
-		l.fatalLogger.Printf(format, v...)
+		l.printf(FatalLevel, format, v...)
+		os.Exit(1)
 	}
 }
 
 // Fatalln is equivalent to log.Println() for fatal.
 func (l *Logger) Fatalln(v ...interface{}) {
 	if l.level <= FatalLevel {
-		l.fatalLogger.Println(v...)
+		l.println(FatalLevel, v...)
+		os.Exit(1)
 	}
 }
 
