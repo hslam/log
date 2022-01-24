@@ -45,7 +45,6 @@ const (
 
 const (
 	ignorePackagePrefix = "github.com/hslam/log."
-	logPrefix           = "Log"
 )
 
 var (
@@ -271,18 +270,22 @@ func (l *timeField) Output(w io.Writer, b []byte) {
 
 // prefixField implements the log interface.
 type prefixField struct {
-	l    log
-	name []byte
+	l      log
+	prefix []byte
 }
 
 // withPrefixField returns a new log with the prefix field.
 func withPrefixField(l log, prefix string) log {
+	prefix = strings.TrimSpace(prefix)
+	prefix = strings.Trim(prefix, "[")
+	prefix = strings.Trim(prefix, "]")
+	prefix = strings.TrimSpace(prefix)
 	return &prefixField{l, []byte("[" + prefix + "]")}
 }
 
 // Output writes the log info to the io.Writer.
 func (l *prefixField) Output(w io.Writer, b []byte) {
-	w.Write(l.name)
+	w.Write(l.prefix)
 	l.l.Output(w, b)
 }
 
@@ -341,10 +344,9 @@ type Logger struct {
 // New creates a new Logger.
 func New() *Logger {
 	l := &Logger{
-		out:    os.Stdout,
-		prefix: logPrefix,
-		level:  InfoLevel,
-		line:   true,
+		out:   os.Stdout,
+		level: InfoLevel,
+		line:  true,
 	}
 	l.init()
 	return l
