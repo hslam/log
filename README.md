@@ -52,6 +52,9 @@ func main() {
 	logger.SetLevel(log.DebugLevel)
 	logger.SetHighlight(true)
 	logger.SetLine(true)
+
+	logger.Assertf(1 == 1, "%d %s %t", 1024, "HelloWorld", true)
+
 	logger.Debugf("%d %s %t", 1024, "HelloWorld", true)
 	logger.Tracef("%d %s %t", 1024, "HelloWorld", true)
 	logger.Allf("%d %s %t", 1024, "HelloWorld", true)

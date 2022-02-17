@@ -661,6 +661,22 @@ func (l *Logger) Fatalln(v ...interface{}) {
 	}
 }
 
+// Assert asserts that b is true. Otherwise, it would log fatal.
+func (l *Logger) Assert(b bool) {
+	if !b {
+		l.print(FatalLevel, "Assert failed")
+		os.Exit(1)
+	}
+}
+
+// Assertf is equivalent to Assert with info.
+func (l *Logger) Assertf(b bool, format string, v ...interface{}) {
+	if !b {
+		l.printf(FatalLevel, format, v...)
+		os.Exit(1)
+	}
+}
+
 // Debug is equivalent to log.Print() for debug.
 func Debug(v ...interface{}) {
 	logger.Debug(v...)
@@ -794,4 +810,14 @@ func Fatalf(format string, v ...interface{}) {
 // Fatalln is equivalent to log.Println() for fatal.
 func Fatalln(v ...interface{}) {
 	logger.Fatalln(v...)
+}
+
+// Assert asserts that b is true. Otherwise, it would log fatal.
+func Assert(b bool) {
+	logger.Assert(b)
+}
+
+// Assertf is equivalent to Assert with info.
+func Assertf(b bool, format string, v ...interface{}) {
+	logger.Assertf(b, format, v...)
 }
