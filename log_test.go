@@ -26,6 +26,23 @@ func TestLevel(t *testing.T) {
 	}
 }
 
+func TestSetShortLevel(t *testing.T) {
+	SetShortLevel(true)
+	if !logger.shortLevel {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+	SetShortLevel(false)
+	if logger.shortLevel {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+}
+
 func TestSetHighlight(t *testing.T) {
 	SetHighlight(true)
 	if !logger.highlight {

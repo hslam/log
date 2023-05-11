@@ -307,10 +307,11 @@ func (l *highlightField) Output(w io.Writer, b []byte) {
 	w.Write(reset)
 }
 
-var levels = [9]string{"D", "T", "A", "I", "N", "W", "E", "P", "F"}
+var levels = [9]string{"DEBUG", "TRACE", "ALL", "INFO", "NOTICE", "WARN", "ERROR", "PANIC", "FATAL"}
+var shortLevels = [9]string{"D", "T", "A", "I", "N", "W", "E", "P", "F"}
 var colors = [9][]byte{blue, cyan, white, black, green, yellow, red, magentaBg, redBg}
 
-func newLog(prefix string, level Level, highlight, line bool) log {
+func newLog(prefix string, level Level, shortLevel, highlight, line bool) log {
 	l := newBody()
 	if line {
 		l = withLineField(l)
@@ -318,7 +319,11 @@ func newLog(prefix string, level Level, highlight, line bool) log {
 	if level >= ErrorLevel || level == TraceLevel {
 		l = withStackField(l)
 	}
-	l = withLevelField(l, levels[level])
+	if shortLevel {
+		l = withLevelField(l, shortLevels[level])
+	} else {
+		l = withLevelField(l, levels[level])
+	}
 	l = withTimeField(l)
 	if len(prefix) > 0 {
 		l = withPrefixField(l, prefix)
@@ -332,13 +337,14 @@ func newLog(prefix string, level Level, highlight, line bool) log {
 
 // Logger defines the logger.
 type Logger struct {
-	mu        sync.Mutex
-	out       io.Writer
-	prefix    string
-	level     Level
-	highlight bool
-	line      bool
-	logs      [9]log
+	mu         sync.Mutex
+	out        io.Writer
+	prefix     string
+	level      Level
+	shortLevel bool
+	highlight  bool
+	line       bool
+	logs       [9]log
 }
 
 // New creates a new Logger.
@@ -381,6 +387,17 @@ func SetLevel(level Level) {
 // SetLevel sets log's level
 func (l *Logger) SetLevel(level Level) {
 	l.level = level
+	l.init()
+}
+
+// SetShortLevel sets whether to enable the short level name.
+func SetShortLevel(shortLevel bool) {
+	logger.SetShortLevel(shortLevel)
+}
+
+// SetShortLevel sets whether to enable the short level name.
+func (l *Logger) SetShortLevel(shortLevel bool) {
+	l.shortLevel = shortLevel
 	l.init()
 }
 
@@ -431,7 +448,7 @@ func (l *Logger) GetLevel() Level {
 
 func (l *Logger) init() {
 	for i := 0; i < 9; i++ {
-		l.logs[i] = newLog(l.prefix, Level(i), l.highlight, l.line)
+		l.logs[i] = newLog(l.prefix, Level(i), l.shortLevel, l.highlight, l.line)
 	}
 }
 
