@@ -179,8 +179,8 @@ func newBody() log {
 }
 
 var (
-	front = []byte("[")
-	back  = []byte("]")
+	front = []byte("[\"")
+	back  = []byte("\"]")
 )
 
 // Output writes the log info to the io.Writer.
@@ -200,7 +200,7 @@ func withStackField(l log) log {
 	return &stackField{l}
 }
 
-const stackFormat = "[stack=\"%s\"]"
+const stackFormat = " [stack=\"%s\"]"
 
 // Output writes the log info to the io.Writer.
 func (l *stackField) Output(w io.Writer, b []byte) {
@@ -218,7 +218,7 @@ func withLineField(l log) log {
 	return &lineField{l}
 }
 
-const callerFormat = "[%s:%d]"
+const callerFormat = "[%s:%d] "
 
 // Output writes the log info to the io.Writer.
 func (l *lineField) Output(w io.Writer, b []byte) {
@@ -235,7 +235,7 @@ type levelField struct {
 
 // withLevelField returns a new log with the level field.
 func withLevelField(l log, level string) log {
-	return &levelField{l, []byte("[" + level + "]")}
+	return &levelField{l, []byte("[" + level + "] ")}
 }
 
 // Output writes the log info to the io.Writer.
@@ -255,7 +255,7 @@ func withTimeField(l log) log {
 }
 
 const (
-	timeFormat    = "[2006/01/02 15:04:05.000 -07:00]"
+	timeFormat    = "[2006/01/02 15:04:05.000 -07:00] "
 	timeFormatLen = len(timeFormat)
 )
 
@@ -280,7 +280,7 @@ func withPrefixField(l log, prefix string) log {
 	prefix = strings.Trim(prefix, "[")
 	prefix = strings.Trim(prefix, "]")
 	prefix = strings.TrimSpace(prefix)
-	return &prefixField{l, []byte("[" + prefix + "]")}
+	return &prefixField{l, []byte("[" + prefix + "] ")}
 }
 
 // Output writes the log info to the io.Writer.
@@ -352,79 +352,79 @@ func New() *Logger {
 	return l
 }
 
-//SetPrefix sets log's prefix
+// SetPrefix sets log's prefix
 func SetPrefix(prefix string) {
 	logger.SetPrefix(prefix)
 }
 
-//SetPrefix sets log's prefix
+// SetPrefix sets log's prefix
 func (l *Logger) SetPrefix(prefix string) {
 	l.prefix = prefix
 	l.init()
 }
 
-//GetPrefix returns log's prefix
+// GetPrefix returns log's prefix
 func GetPrefix() (prefix string) {
 	return logger.GetPrefix()
 }
 
-//GetPrefix returns log's prefix
+// GetPrefix returns log's prefix
 func (l *Logger) GetPrefix() (prefix string) {
 	return l.prefix
 }
 
-//SetLevel sets log's level
+// SetLevel sets log's level
 func SetLevel(level Level) {
 	logger.SetLevel(level)
 }
 
-//SetLevel sets log's level
+// SetLevel sets log's level
 func (l *Logger) SetLevel(level Level) {
 	l.level = level
 	l.init()
 }
 
-//SetHighlight sets whether to enable the highlight field.
+// SetHighlight sets whether to enable the highlight field.
 func SetHighlight(highlight bool) {
 	logger.SetHighlight(highlight)
 }
 
-//SetHighlight sets whether to enable the highlight field.
+// SetHighlight sets whether to enable the highlight field.
 func (l *Logger) SetHighlight(highlight bool) {
 	l.highlight = highlight
 	l.init()
 }
 
-//SetLine sets whether to enable the line field .
+// SetLine sets whether to enable the line field .
 func SetLine(line bool) {
 	logger.SetLine(line)
 }
 
-//SetLine sets whether to enable the line field .
+// SetLine sets whether to enable the line field .
 func (l *Logger) SetLine(line bool) {
 	l.line = line
 	l.init()
 }
 
-//SetOut sets log's writer. The out variable sets the
+// SetOut sets log's writer. The out variable sets the
 // destination to which log data will be written.
 func SetOut(w io.Writer) {
 	logger.SetOut(w)
 }
 
-//SetOut sets log's writer. The out variable sets the
+// SetOut sets log's writer. The out variable sets the
 // destination to which log data will be written.
 func (l *Logger) SetOut(w io.Writer) {
 	l.out = w
 	l.init()
 }
 
-//GetLevel returns log's level
+// GetLevel returns log's level
 func GetLevel() Level {
 	return logger.GetLevel()
 }
 
-//GetLevel returns log's level
+// GetLevel returns log's level
 func (l *Logger) GetLevel() Level {
 	return l.level
 }
