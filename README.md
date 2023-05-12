@@ -80,7 +80,7 @@ func main() {
 ```
 
 #### Highlight
-<img src="https://raw.githubusercontent.com/hslam/log/master/example.png" width = "948" height = "113" alt="example" align=center>
+<img src="https://raw.githubusercontent.com/hslam/log/master/example.png" width = "899" height = "113" alt="example" align=center>
 
 ### License
 This package is licensed under a MIT license (Copyright (c) 2019 Meng Huang)
