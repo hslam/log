@@ -68,14 +68,14 @@ func main() {
 
 ### Output
 ```
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [DEBUG] [buffer.go:16] ["1024 HelloWorld true"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [TRACE] [buffer.go:17] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/buffer.go:17\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [ALL] [buffer.go:18] ["1024 HelloWorld true"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [INFO] [buffer.go:19] ["1024 HelloWorld true"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [NOTICE] [buffer.go:20] ["1024 HelloWorld true"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [WARN] [buffer.go:21] ["1024 HelloWorld true"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [ERROR] [buffer.go:22] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/buffer.go:22\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
-[LogPrefix] [2023/05/12 01:56:01.695 +08:00] [FATAL] [buffer.go:23] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/buffer.go:23\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [DEBUG] [main.go:16] ["1024 HelloWorld true"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [TRACE] [main.go:17] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/main.go:17\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [ALL] [main.go:18] ["1024 HelloWorld true"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [INFO] [main.go:19] ["1024 HelloWorld true"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [NOTICE] [main.go:20] ["1024 HelloWorld true"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [WARN] [main.go:21] ["1024 HelloWorld true"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [ERROR] [main.go:22] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/main.go:22\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
+[LogPrefix] [2023/05/12 20:00:51.876 +08:00] [FATAL] [main.go:23] ["1024 HelloWorld true"] [stack="main.main\n\t/Users/huangmeng/go/src/github.com/hslam/tmp/log/main.go:23\nruntime.main\n\t/usr/local/go/src/runtime/proc.go:250"]
 ```
 
 ### License
