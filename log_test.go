@@ -18,7 +18,7 @@ func TestPrefix(t *testing.T) {
 }
 
 func TestLevel(t *testing.T) {
-	var level = DebugLevel
+	var level = AllLevel
 	SetLevel(level)
 	SetOut(os.Stdout)
 	if level != GetLevel() {
@@ -77,10 +77,10 @@ func TestSetLine(t *testing.T) {
 	Infoln(1024, "HelloWorld", true)
 }
 
-func TestDebug(t *testing.T) {
-	Debug(1024, "HelloWorld", true)
-	Debugf("%d %s %t", 1024, "HelloWorld", true)
-	Debugln(1024, "HelloWorld", true)
+func TestAll(t *testing.T) {
+	All(1024, "HelloWorld", true)
+	Allf("%d %s %t", 1024, "HelloWorld", true)
+	Allln(1024, "HelloWorld", true)
 }
 
 func TestTrace(t *testing.T) {
@@ -89,10 +89,10 @@ func TestTrace(t *testing.T) {
 	Traceln(1024, "HelloWorld", true)
 }
 
-func TestAll(t *testing.T) {
-	All(1024, "HelloWorld", true)
-	Allf("%d %s %t", 1024, "HelloWorld", true)
-	Allln(1024, "HelloWorld", true)
+func TestDebug(t *testing.T) {
+	Debug(1024, "HelloWorld", true)
+	Debugf("%d %s %t", 1024, "HelloWorld", true)
+	Debugln(1024, "HelloWorld", true)
 }
 
 func TestInfo(t *testing.T) {
@@ -146,8 +146,15 @@ func TestPanic(t *testing.T) {
 	}()
 }
 
-func testFatal(t *testing.T) {
+func TestFatal(t *testing.T) {
+	logger.SetLevel(OffLevel)
 	Fatal(1024, "HelloWorld", true)
 	Fatalf("%d %s %t", 1024, "HelloWorld", true)
 	Fatalln(1024, "HelloWorld", true)
+	logger.SetLevel(AllLevel)
+}
+
+func TestAssert(t *testing.T) {
+	Assert(true)
+	Assertf(true, "%d %s %t", 1024, "HelloWorld", true)
 }

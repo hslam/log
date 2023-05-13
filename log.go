@@ -21,12 +21,12 @@ import (
 type Level uint8
 
 const (
-	//DebugLevel defines the level of debug in test environments.
-	DebugLevel Level = 0
+	//AllLevel defines the lowest level.
+	AllLevel Level = 0
 	//TraceLevel defines the level of trace in test environments.
 	TraceLevel Level = 1
-	//AllLevel defines the lowest level in production environments.
-	AllLevel Level = 2
+	//DebugLevel defines the level of debug.
+	DebugLevel Level = 2
 	//InfoLevel defines the level of info.
 	InfoLevel Level = 3
 	//NoticeLevel defines the level of notice.
@@ -56,8 +56,14 @@ var (
 
 // colors
 var (
+	blackBg   = []byte{27, 91, 57, 55, 59, 52, 48, 109}
 	redBg     = []byte{27, 91, 57, 55, 59, 52, 49, 109}
+	greenBg   = []byte{27, 91, 57, 55, 59, 52, 50, 109}
+	yellowBg  = []byte{27, 91, 57, 48, 59, 52, 51, 109}
+	blueBg    = []byte{27, 91, 57, 55, 59, 52, 52, 109}
 	magentaBg = []byte{27, 91, 57, 55, 59, 52, 53, 109}
+	cyanBg    = []byte{27, 91, 57, 55, 59, 52, 54, 109}
+	whiteBg   = []byte{27, 91, 57, 48, 59, 52, 55, 109}
 	black     = []byte{27, 91, 57, 48, 109}
 	red       = []byte{27, 91, 51, 49, 109}
 	green     = []byte{27, 91, 51, 50, 109}
@@ -307,16 +313,17 @@ func (l *highlightField) Output(w io.Writer, b []byte) {
 	w.Write(reset)
 }
 
-var levels = [9]string{"DEBUG", "TRACE", "ALL", "INFO", "NOTICE", "WARN", "ERROR", "PANIC", "FATAL"}
-var shortLevels = [9]string{"D", "T", "A", "I", "N", "W", "E", "P", "F"}
-var colors = [9][]byte{blue, cyan, white, black, green, yellow, red, magentaBg, redBg}
+var levels = [9]string{"ALL", "TRACE", "DEBUG", "INFO", "NOTICE", "WARN", "ERROR", "PANIC", "FATAL"}
+var shortLevels = [9]string{"A", "T", "D", "I", "N", "W", "E", "P", "F"}
+
+var colors = [9][]byte{{}, magenta, blue, cyan, green, yellow, red, magentaBg, redBg}
 
 func newLog(prefix string, level Level, shortLevel, highlight, line bool) log {
 	l := newBody()
 	if line {
 		l = withLineField(l)
 	}
-	if level >= ErrorLevel || level == TraceLevel {
+	if level >= ErrorLevel {
 		l = withStackField(l)
 	}
 	if shortLevel {
@@ -483,24 +490,24 @@ func (l *Logger) println(level Level, v ...interface{}) {
 	freeBuffer(body)
 }
 
-// Debug is equivalent to log.Print() for debug.
-func (l *Logger) Debug(v ...interface{}) {
-	if l.level <= DebugLevel {
-		l.print(DebugLevel, v...)
+// All is equivalent to log.Print() for all log.
+func (l *Logger) All(v ...interface{}) {
+	if l.level <= AllLevel {
+		l.print(AllLevel, v...)
 	}
 }
 
-// Debugf is equivalent to log.Printf() for debug.
-func (l *Logger) Debugf(format string, v ...interface{}) {
-	if l.level <= DebugLevel {
-		l.printf(DebugLevel, format, v...)
+// Allf is equivalent to log.Printf() for all log.
+func (l *Logger) Allf(format string, v ...interface{}) {
+	if l.level <= AllLevel {
+		l.printf(AllLevel, format, v...)
 	}
 }
 
-// Debugln is equivalent to log.Println() for debug.
-func (l *Logger) Debugln(v ...interface{}) {
-	if l.level <= DebugLevel {
-		l.println(DebugLevel, v...)
+// Allln is equivalent to log.Println() for all log.
+func (l *Logger) Allln(v ...interface{}) {
+	if l.level <= AllLevel {
+		l.println(AllLevel, v...)
 	}
 }
 
@@ -525,24 +532,24 @@ func (l *Logger) Traceln(v ...interface{}) {
 	}
 }
 
-// All is equivalent to log.Print() for all log.
-func (l *Logger) All(v ...interface{}) {
-	if l.level <= AllLevel {
-		l.print(AllLevel, v...)
+// Debug is equivalent to log.Print() for debug.
+func (l *Logger) Debug(v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.print(DebugLevel, v...)
 	}
 }
 
-// Allf is equivalent to log.Printf() for all log.
-func (l *Logger) Allf(format string, v ...interface{}) {
-	if l.level <= AllLevel {
-		l.printf(AllLevel, format, v...)
+// Debugf is equivalent to log.Printf() for debug.
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.printf(DebugLevel, format, v...)
 	}
 }
 
-// Allln is equivalent to log.Println() for all log.
-func (l *Logger) Allln(v ...interface{}) {
-	if l.level <= AllLevel {
-		l.println(AllLevel, v...)
+// Debugln is equivalent to log.Println() for debug.
+func (l *Logger) Debugln(v ...interface{}) {
+	if l.level <= DebugLevel {
+		l.println(DebugLevel, v...)
 	}
 }
 
@@ -694,19 +701,19 @@ func (l *Logger) Assertf(b bool, format string, v ...interface{}) {
 	}
 }
 
-// Debug is equivalent to log.Print() for debug.
-func Debug(v ...interface{}) {
-	logger.Debug(v...)
+// All is equivalent to log.Print() for all log.
+func All(v ...interface{}) {
+	logger.All(v...)
 }
 
-// Debugf is equivalent to log.Printf() for debug.
-func Debugf(format string, v ...interface{}) {
-	logger.Debugf(format, v...)
+// Allf is equivalent to log.Printf() for all log.
+func Allf(format string, v ...interface{}) {
+	logger.Allf(format, v...)
 }
 
-// Debugln is equivalent to log.Println() for debug.
-func Debugln(v ...interface{}) {
-	logger.Debugln(v...)
+// Allln is equivalent to log.Println() for all log.
+func Allln(v ...interface{}) {
+	logger.Allln(v...)
 }
 
 // Trace is equivalent to log.Print() for trace.
@@ -724,19 +731,19 @@ func Traceln(v ...interface{}) {
 	logger.Traceln(v...)
 }
 
-// All is equivalent to log.Print() for all log.
-func All(v ...interface{}) {
-	logger.All(v...)
+// Debug is equivalent to log.Print() for debug.
+func Debug(v ...interface{}) {
+	logger.Debug(v...)
 }
 
-// Allf is equivalent to log.Printf() for all log.
-func Allf(format string, v ...interface{}) {
-	logger.Allf(format, v...)
+// Debugf is equivalent to log.Printf() for debug.
+func Debugf(format string, v ...interface{}) {
+	logger.Debugf(format, v...)
 }
 
-// Allln is equivalent to log.Println() for all log.
-func Allln(v ...interface{}) {
-	logger.Allln(v...)
+// Debugln is equivalent to log.Println() for debug.
+func Debugln(v ...interface{}) {
+	logger.Debugln(v...)
 }
 
 // Info is equivalent to log.Print() for info.
