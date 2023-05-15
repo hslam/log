@@ -5,6 +5,7 @@
 package log
 
 import (
+	"github.com/hslam/writer"
 	"os"
 	"testing"
 )
@@ -41,6 +42,30 @@ func TestSetShortLevel(t *testing.T) {
 	Info(1024, "HelloWorld", true)
 	Infof("%d %s %t", 1024, "HelloWorld", true)
 	Infoln(1024, "HelloWorld", true)
+}
+
+func TestSetBufferedOutput(t *testing.T) {
+	SetBufferedOutput(0)
+	if logger.bufferSize != 0 {
+		t.Error("")
+	}
+	if _, ok := logger.writer.(*writer.Writer); ok {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+	SetBufferedOutput(defaultBufferSize)
+	if logger.bufferSize == 0 {
+		t.Error("")
+	}
+	if _, ok := logger.writer.(*writer.Writer); !ok {
+		t.Error("")
+	}
+	Info(1024, "HelloWorld", true)
+	Infof("%d %s %t", 1024, "HelloWorld", true)
+	Infoln(1024, "HelloWorld", true)
+	Flush()
 }
 
 func TestSetHighlight(t *testing.T) {

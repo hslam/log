@@ -7,6 +7,7 @@ package log
 import (
 	"bytes"
 	"fmt"
+	"github.com/hslam/writer"
 	"io"
 	"os"
 	"path"
@@ -45,6 +46,7 @@ const (
 
 const (
 	ignorePackagePrefix = "github.com/hslam/log."
+	defaultBufferSize   = 65536
 )
 
 var (
@@ -346,6 +348,8 @@ func newLog(prefix string, level Level, shortLevel, highlight, line bool) log {
 type Logger struct {
 	mu         sync.Mutex
 	out        io.Writer
+	writer     io.Writer
+	bufferSize int
 	prefix     string
 	level      Level
 	shortLevel bool
@@ -357,9 +361,10 @@ type Logger struct {
 // New creates a new Logger.
 func New() *Logger {
 	l := &Logger{
-		out:   os.Stdout,
-		level: InfoLevel,
-		line:  true,
+		out:        os.Stdout,
+		level:      InfoLevel,
+		line:       true,
+		bufferSize: defaultBufferSize,
 	}
 	l.init()
 	return l
@@ -443,6 +448,17 @@ func (l *Logger) SetOut(w io.Writer) {
 	l.init()
 }
 
+// SetBufferedOutput sets the buffered writer with the buffer size.
+func SetBufferedOutput(bufferSize int) {
+	logger.SetBufferedOutput(bufferSize)
+}
+
+// SetBufferedOutput sets the buffered writer with the buffer size.
+func (l *Logger) SetBufferedOutput(bufferSize int) {
+	l.bufferSize = bufferSize
+	l.init()
+}
+
 // GetLevel returns log's level
 func GetLevel() Level {
 	return logger.GetLevel()
@@ -453,20 +469,49 @@ func (l *Logger) GetLevel() Level {
 	return l.level
 }
 
+// Flush writes any buffered data to the underlying io.Writer.
+func Flush() {
+	logger.Flush()
+}
+
+// Flush writes any buffered data to the underlying io.Writer.
+func (l *Logger) Flush() {
+	l.write(true, nil)
+}
+
 func (l *Logger) init() {
+	if w, ok := l.writer.(*writer.Writer); ok {
+		w.Close()
+	}
+	if l.bufferSize > 0 {
+		l.writer = writer.NewWriter(l.out, l.bufferSize)
+	} else {
+		l.writer = l.out
+	}
 	for i := 0; i < 9; i++ {
 		l.logs[i] = newLog(l.prefix, Level(i), l.shortLevel, l.highlight, l.line)
 	}
 }
 
-func (l *Logger) logout(level Level, b []byte) {
+func (l *Logger) logout(level Level, body []byte) {
 	buf := newBuffer()
-	l.logs[level].Output(buf, bytes.TrimSpace(b))
+	l.logs[level].Output(buf, bytes.TrimSpace(body))
 	fmt.Fprintln(buf)
-	l.mu.Lock()
-	l.out.Write(buf.Bytes())
-	l.mu.Unlock()
+	l.write(level >= PanicLevel, buf.Bytes())
 	freeBuffer(buf)
+}
+
+func (l *Logger) write(flush bool, b []byte) {
+	l.mu.Lock()
+	if len(b) > 0 {
+		l.writer.Write(b)
+	}
+	if flush {
+		if w, ok := l.writer.(*writer.Writer); ok {
+			w.Flush()
+		}
+	}
+	l.mu.Unlock()
 }
 
 func (l *Logger) print(level Level, v ...interface{}) {
